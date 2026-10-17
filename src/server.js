@@ -1366,7 +1366,7 @@ var init_job_workspace = __esm(() => {
 });
 
 // src/source/opencode2/native-plugin.js
-import path11 from "path";
+import path12 from "path";
 
 // src/source/opencode2/session-location.js
 import path from "path";
@@ -3213,9 +3213,9 @@ async function initializeProgressFile(directory, argumentsText = "") {
 }
 
 // src/source/opencode2/daemon-controller.js
-import path10 from "path";
+import path11 from "path";
 import { randomUUID as randomUUID3 } from "crypto";
-import { promises as fs6 } from "fs";
+import { promises as fs7 } from "fs";
 
 // scripts/pulse-check.mjs
 import { promises as fs5 } from "fs";
@@ -3368,6 +3368,10 @@ async function checkGoalPulse(project, options = {}) {
   const release = await acquireLock(project);
   try {
     const goals = await readGoalSnapshots(project, target);
+    for (const goal of options.externalGoals || []) {
+      if (goal?.id && goal?.sessionID && (!target || target === goal.id || target === goal.sessionID))
+        goals.push(goal);
+    }
     const stateFile = pulseStateFile(project);
     const state = await readJson(stateFile, { schemaVersion: 1, goals: {} });
     if (!state.goals || typeof state.goals !== "object")
@@ -3452,17 +3456,70 @@ async function checkGoalPulse(project, options = {}) {
   }
 }
 
+// src/source/opencode2/prevalentware-goals.js
+import { promises as fs6 } from "fs";
+import { homedir } from "os";
+import path10 from "path";
+function prevalentwareStatePath(env = process.env) {
+  if (env.OPENCODE_GOAL_STATE_PATH)
+    return env.OPENCODE_GOAL_STATE_PATH;
+  const home = env.XDG_DATA_HOME || (process.platform === "win32" && env.APPDATA ? env.APPDATA : path10.join(homedir(), ".local", "share"));
+  return path10.join(home, "opencode-goal-plugin", "goals.json");
+}
+async function readScopedPrevalentwareGoals({ scopeAllowed, statePath: statePath2 = prevalentwareStatePath() } = {}) {
+  if (typeof scopeAllowed !== "function")
+    return [];
+  let state;
+  try {
+    state = JSON.parse(await fs6.readFile(statePath2, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT")
+      return [];
+    throw error;
+  }
+  if (!state || ![1, 2, 3].includes(state.version) || !state.goals || typeof state.goals !== "object" || Array.isArray(state.goals)) {
+    throw new Error("Invalid third-party Goal state; refusing monitoring");
+  }
+  const accepted = [];
+  for (const [key, goal] of Object.entries(state.goals)) {
+    if (!goal || typeof goal !== "object" || typeof goal.sessionID !== "string" || goal.sessionID !== key)
+      continue;
+    let allowed = false;
+    try {
+      allowed = await scopeAllowed(goal.sessionID) === true;
+    } catch {
+      allowed = false;
+    }
+    if (!allowed || typeof goal.id !== "string" || !Number.isFinite(goal.updatedAt) || goal.updatedAt <= 0)
+      continue;
+    const updatedAt = goal.updatedAt < 100000000000 ? goal.updatedAt * 1000 : goal.updatedAt;
+    accepted.push({
+      id: `prevalentware:${goal.id}`,
+      sessionID: goal.sessionID,
+      status: goal.status,
+      updatedAt,
+      progressRevision: Number(goal.planRevision || 0),
+      revision: Number(goal.autoTurns || 0),
+      storageGeneration: 0
+    });
+  }
+  return accepted;
+}
+
 // src/source/opencode2/daemon-controller.js
 var controllers = new Map;
 var DEFAULTS = Object.freeze({ autoStart: false, pulse: true });
 var CHECK_EVERY_MS = 60000;
 var parse = (s) => String(s || "").trim().toLowerCase().split(/\s+/).filter(Boolean);
-function createDaemonController({ directory, check = checkGoalPulse, everyMs = CHECK_EVERY_MS, onAlert = console.warn } = {}) {
-  if (!path10.isAbsolute(directory || ""))
+function createDaemonController({ directory, scopeAllowed, check = async (project, options) => checkGoalPulse(project, {
+  ...options,
+  externalGoals: await readScopedPrevalentwareGoals({ scopeAllowed })
+}), everyMs = CHECK_EVERY_MS, onAlert = console.warn } = {}) {
+  if (!path11.isAbsolute(directory || ""))
     throw new Error("Daemon requires an absolute project directory");
-  const root = path10.join(directory, ".opencode", "opencode-loop");
-  const file = path10.join(root, "daemon-control.json");
-  const lock = path10.join(root, "daemon-control.lock");
+  const root = path11.join(directory, ".opencode", "opencode-loop");
+  const file = path11.join(root, "daemon-control.json");
+  const lock = path11.join(root, "daemon-control.lock");
   const nonce = randomUUID3();
   let config = { ...DEFAULTS };
   let running = false;
@@ -3475,20 +3532,20 @@ function createDaemonController({ directory, check = checkGoalPulse, everyMs = C
     return result2;
   };
   async function persist() {
-    await fs6.mkdir(root, { recursive: true });
+    await fs7.mkdir(root, { recursive: true });
     const temporary = `${file}.${process.pid}.${nonce}.tmp`;
-    await fs6.writeFile(temporary, JSON.stringify({ schemaVersion: 1, ...config }, null, 2) + `
+    await fs7.writeFile(temporary, JSON.stringify({ schemaVersion: 1, ...config }, null, 2) + `
 `, "utf8");
     try {
-      await fs6.rename(temporary, file);
+      await fs7.rename(temporary, file);
     } catch (error) {
-      await fs6.rm(temporary, { force: true }).catch(() => {});
+      await fs7.rm(temporary, { force: true }).catch(() => {});
       throw error;
     }
   }
   async function load() {
     try {
-      const value = JSON.parse(await fs6.readFile(file, "utf8"));
+      const value = JSON.parse(await fs7.readFile(file, "utf8"));
       if (value?.schemaVersion !== 1 || typeof value.autoStart !== "boolean" || typeof value.pulse !== "boolean") {
         throw new Error("Invalid daemon preferences; refusing autostart");
       }
@@ -3500,17 +3557,17 @@ function createDaemonController({ directory, check = checkGoalPulse, everyMs = C
   }
   async function lockOwner() {
     try {
-      return JSON.parse(await fs6.readFile(path10.join(lock, "owner.json"), "utf8"));
+      return JSON.parse(await fs7.readFile(path11.join(lock, "owner.json"), "utf8"));
     } catch {
       return;
     }
   }
   async function takeLock() {
-    await fs6.mkdir(root, { recursive: true });
+    await fs7.mkdir(root, { recursive: true });
     for (let attempt = 0;attempt < 2; attempt++) {
       try {
-        await fs6.mkdir(lock);
-        await fs6.writeFile(path10.join(lock, "owner.json"), JSON.stringify({ pid: process.pid, nonce }) + `
+        await fs7.mkdir(lock);
+        await fs7.writeFile(path11.join(lock, "owner.json"), JSON.stringify({ pid: process.pid, nonce }) + `
 `);
         return;
       } catch (error) {
@@ -3528,7 +3585,7 @@ function createDaemonController({ directory, check = checkGoalPulse, everyMs = C
         }
         if (alive)
           throw new Error("Daemon already owned by another OpenCode server");
-        await fs6.rm(lock, { recursive: true, force: true });
+        await fs7.rm(lock, { recursive: true, force: true });
       }
     }
     throw new Error("Daemon lock contention");
@@ -3536,7 +3593,7 @@ function createDaemonController({ directory, check = checkGoalPulse, everyMs = C
   async function releaseLock() {
     const owner = await lockOwner();
     if (owner?.pid === process.pid && owner.nonce === nonce)
-      await fs6.rm(lock, { recursive: true, force: true });
+      await fs7.rm(lock, { recursive: true, force: true });
   }
   async function tick() {
     if (!running || !config.pulse || activeCheck)
@@ -3639,11 +3696,11 @@ ${lastError ? `Error: ${lastError}
     getStatus: status
   };
 }
-async function acquireDaemonController(directory) {
-  const key = path10.resolve(directory).toLowerCase();
+async function acquireDaemonController(directory, { scopeAllowed } = {}) {
+  const key = path11.resolve(directory).toLowerCase();
   let entry = controllers.get(key);
   if (!entry) {
-    const controller = createDaemonController({ directory });
+    const controller = createDaemonController({ directory, scopeAllowed });
     entry = { controller, refs: 0, ready: controller.init() };
     controllers.set(key, entry);
   }
@@ -3715,7 +3772,7 @@ var OpenCodeLoopNativePlugin = Object.freeze({
       workspaceID: ctx.location?.workspaceID,
       getSession: (input) => ctx.session.get(input)
     });
-    const daemon = await acquireDaemonController(directory);
+    const daemon = await acquireDaemonController(directory, { scopeAllowed: ownsSession });
     const registrations = [];
     const lifecycleAbort = new AbortController;
     const prompt = (request) => ctx.session.prompt({ ...request, delivery: request.delivery || "queue", metadata: { ...request.metadata, opencode_loop_v2: true } });
@@ -3796,7 +3853,7 @@ var OpenCodeLoopNativePlugin = Object.freeze({
         return { handled: true, accepted: true, ...output };
       }
       if (["loop-help", "loop-doctor", "loop-logs"].includes(name)) {
-        const text3 = name === "loop-logs" ? (await readSmallTextFile(path11.join(stateDir(directory), "loop.log"), 2000000)).split(`
+        const text3 = name === "loop-logs" ? (await readSmallTextFile(path12.join(stateDir(directory), "loop.log"), 2000000)).split(`
 `).slice(-60).join(`
 `) || "No Loop log entries." : name === "loop-doctor" ? `Native OpenCode Loop
 Host: ${ctx.app?.version || "unknown"}
@@ -3888,8 +3945,8 @@ function inspectOpenCode2Context(ctx) {
 
 // src/source/opencode2/diagnostics.js
 init_state();
-import { promises as fs7 } from "fs";
-import path12 from "path";
+import { promises as fs8 } from "fs";
+import path13 from "path";
 var OPENCODE_LOOP_V2_HELP_TEXT = [
   "OpenCode Loop V2 experimental help:",
   "/loop 0s --max-runs 2 <prompt>                  autonomous prompt loop",
@@ -3918,7 +3975,7 @@ function createOpenCode2DiagnosticsRuntime(options = {}) {
   if (typeof options.prompt !== "function")
     throw new TypeError("V2 diagnostics runtime requires prompt()");
   const readState2 = typeof options.readState === "function" ? options.readState : readState;
-  const readFile2 = typeof options.readFile === "function" ? options.readFile : (...args) => fs7.readFile(...args);
+  const readFile2 = typeof options.readFile === "function" ? options.readFile : (...args) => fs8.readFile(...args);
   const runtimeVersion = options.runtimeVersion || process.version;
   const runtimePlatform = options.runtimePlatform || process.platform;
   async function exportState(event) {
@@ -3969,7 +4026,7 @@ ${JSON.stringify(state, null, 2)}
       return { handled: false, reason: "missing-scope" };
     let text3 = "No OpenCode 2 Loop log found.";
     try {
-      const raw = await readFile2(path12.join(stateDir(scope.directory), "loop.log"), "utf8");
+      const raw = await readFile2(path13.join(stateDir(scope.directory), "loop.log"), "utf8");
       const lines = String(raw || "").trim().split(/\r?\n/).filter((line) => line.includes('"v2":true')).slice(-80);
       if (lines.length)
         text3 = lines.join(`

@@ -49,7 +49,7 @@ export const OpenCodeLoopNativePlugin = Object.freeze({
       directory, workspaceID: ctx.location?.workspaceID,
       getSession: (input) => ctx.session.get(input),
     })
-    const daemon = await acquireDaemonController(directory)
+    const daemon = await acquireDaemonController(directory, { scopeAllowed: ownsSession })
     const registrations = []
     const lifecycleAbort = new AbortController()
     const prompt = (request) => ctx.session.prompt({ ...request, delivery: request.delivery || "queue", metadata: { ...request.metadata, opencode_loop_v2: true } })

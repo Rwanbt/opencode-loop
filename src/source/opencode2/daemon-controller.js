@@ -2,13 +2,16 @@ import path from "node:path"
 import { randomUUID } from "node:crypto"
 import { promises as fs } from "node:fs"
 import { checkGoalPulse } from "../../../scripts/pulse-check.mjs"
+import { readScopedPrevalentwareGoals } from "./prevalentware-goals.js"
 
 const controllers = new Map()
 const DEFAULTS = Object.freeze({ autoStart: false, pulse: true })
 const CHECK_EVERY_MS = 60_000
 const parse = (s) => String(s || "").trim().toLowerCase().split(/\s+/).filter(Boolean)
 
-export function createDaemonController({ directory, check = checkGoalPulse, everyMs = CHECK_EVERY_MS, onAlert = console.warn } = {}) {
+export function createDaemonController({ directory, scopeAllowed, check = async (project, options) => checkGoalPulse(project, {
+  ...options, externalGoals: await readScopedPrevalentwareGoals({ scopeAllowed }),
+}), everyMs = CHECK_EVERY_MS, onAlert = console.warn } = {}) {
   if (!path.isAbsolute(directory || "")) throw new Error("Daemon requires an absolute project directory")
   const root = path.join(directory, ".opencode", "opencode-loop")
   const file = path.join(root, "daemon-control.json")
@@ -136,11 +139,11 @@ export function createDaemonController({ directory, check = checkGoalPulse, ever
   }
 }
 
-export async function acquireDaemonController(directory) {
+export async function acquireDaemonController(directory, { scopeAllowed } = {}) {
   const key = path.resolve(directory).toLowerCase()
   let entry = controllers.get(key)
   if (!entry) {
-    const controller = createDaemonController({ directory })
+    const controller = createDaemonController({ directory, scopeAllowed })
     entry = { controller, refs: 0, ready: controller.init() }
     controllers.set(key, entry)
   }

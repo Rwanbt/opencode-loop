@@ -1,5 +1,5 @@
 # OpenCode Loop
-> **Rwanbt fork — development branch** (`@rwanbt/opencode-loop`, `0.6.8-rwanbt.1`). This fork includes native `/daemon` controls for OpenCode 2, alongside upstream `/loop`. It is **not yet published to npm**. Commands below referring to `@bybrawe` describe the original upstream, not this fork.
+> **Rwanbt fork — development branch** (`@rwanbt/opencode-loop`, `0.6.8-rwanbt.2`). This fork includes native `/daemon` controls for OpenCode 2, alongside upstream `/loop`. It is **not yet published to npm**. Commands below referring to `@bybrawe` describe the original upstream, not this fork.
 
 ### Fork installation (OpenCode 2 Desktop, no recompilation)
 
@@ -31,7 +31,7 @@ The installer backs up `opencode.jsonc`, requires the pinned upstream Loop 0.6.8
 - The controller is **part of the OpenCode 2 server plugin lifecycle**, not a second Windows service or the standalone `opencode-loopd` process. It stops cleanly when the last plugin instance unloads. Starting with Windows is not required.
 - **Default: stopped, autostart off**. `/daemon start` starts a read-only Goal pulse monitor for the current project; `/daemon stop` stops it and disables autostart. `/daemon auto on` starts now and remembers the preference. `/daemon auto off` only disables the next automatic start; it does not stop a running monitor. `/daemon pulse off` suspends Goal checks without enabling any AI execution.
 - A per-project lock prevents two OpenCode server processes from monitoring the same project simultaneously. Locks with unverifiable owners fail closed. The monitor reads `.opencode/goals/*.json`, logs an alert once per stall episode, and writes only `.opencode/opencode-loop/{daemon-control,pulse-check}.json`. No model calls, permission approvals, automatic Goal resumes or scheduled shell commands are introduced by `/daemon`.
-- Existing `/loop` jobs still use their own session scheduler. The standalone `opencode-loopd` CLI remains available separately if explicitly needed. **The embedded `/daemon` does not control an unrelated standalone `opencode-loopd` process.** Integration with third-party Goal state layouts (including `@prevalentware/opencode-goal-plugin`) must be verified per project.
+- Existing `/loop` jobs still use their own session scheduler. The standalone `opencode-loopd` CLI remains available separately if explicitly needed. **The embedded `/daemon` does not control an unrelated standalone `opencode-loopd` process.** The fork includes a read-only adapter for the installed `@prevalentware/opencode-goal-plugin` 0.1.63 global `goals.json` schema: Unix-second dates are normalized, and every cross-workspace Goal session must be attested by OpenCode `session.get` before it is monitored. Unattested sessions are excluded. Live active Goal monitoring still requires a project with an active Goal.
 
 
 ## Native OpenCode 2 (0.6.8)

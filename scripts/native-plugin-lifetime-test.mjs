@@ -4,6 +4,8 @@ import { mkdtemp, rm } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import plugin from "../src/source/opencode2/native-plugin.js"
+// Host fixtures do not attest real persisted Goal sessions; never read user Goal data.
+process.env.OPENCODE_GOAL_STATE_PATH = path.join(os.tmpdir(), "loop-native-fixture-no-external-goals.json")
 
 function fixture(directory, { failCleanup = false, captureCommands = false } = {}) {
   const released = []
