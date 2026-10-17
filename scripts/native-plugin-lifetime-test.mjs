@@ -4,6 +4,8 @@ import { mkdtemp, rm } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import plugin from "../src/source/opencode2/native-plugin.js"
+// Host fixtures do not attest real persisted Goal sessions; never read user Goal data.
+process.env.OPENCODE_GOAL_STATE_PATH = path.join(os.tmpdir(), "loop-native-fixture-no-external-goals.json")
 
 function fixture(directory, { failCleanup = false, captureCommands = false } = {}) {
   const released = []
@@ -133,7 +135,7 @@ test("native Loop never probes undocumented SessionDomain shell or inbox fields"
 })
 
 test("native Loop uses the same public plugin identity as the package entry", () => {
-  assert.equal(plugin.id, "@bybrawe/opencode-loop", "native entry must share canonical plugin identity")
+  assert.equal(plugin.id, "@rwanbt/opencode-loop", "native entry must share canonical plugin identity")
 })
 
 test("native /loop-help reflects public V2 compaction rather than obsolete unsupported guidance", async () => {
@@ -153,6 +155,31 @@ test("native /loop-help reflects public V2 compaction rather than obsolete unsup
   } finally {
     host.end()
     await dispose?.().catch(() => {})
+    await rm(directory, { recursive: true, force: true, maxRetries: 5, retryDelay: 20 })
+  }
+})
+
+test("native /daemon commands are local, scoped and stop on plugin unload", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "loop-v2-daemon-cmd-"))
+  const host = fixture(directory, { captureCommands: true })
+  let dispose
+  try {
+    dispose = await plugin.setup(host.ctx)
+    const command = host.commands.get("daemon")
+    assert.equal(typeof command, "function", "daemon command should appear in native catalog")
+    await command({ sessionID: "ses_daemon", arguments: "status" })
+    assert.match(host.prompts.at(-1).text, /Daemon: stopped/)
+    await command({ sessionID: "ses_daemon", arguments: "start" })
+    assert.match(host.prompts.at(-1).text, /Daemon: running/)
+    await command({ sessionID: "ses_daemon", arguments: "auto on" })
+    assert.match(host.prompts.at(-1).text, /Autostart: on/)
+    await command({ sessionID: "ses_daemon", arguments: "stop" })
+    assert.match(host.prompts.at(-1).text, /Daemon: stopped/)
+    assert.match(host.prompts.at(-1).text, /Autostart: off/)
+    assert.equal(host.prompts.every((p) => p.resume === false), true, "controls must not generate a model turn")
+  } finally {
+    host.end()
+    await dispose?.()
     await rm(directory, { recursive: true, force: true, maxRetries: 5, retryDelay: 20 })
   }
 })

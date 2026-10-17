@@ -4,7 +4,7 @@ import bundled from "./server.js"
 export * from "./server.js"
 
 const native = Plugin.define({
-  id: "@bybrawe/opencode-loop",
+  id: "@rwanbt/opencode-loop",
   setup: (context) => bundled.setup(context),
 })
 

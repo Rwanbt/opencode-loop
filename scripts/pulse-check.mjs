@@ -156,6 +156,9 @@ export async function checkGoalPulse(project, options = {}) {
 
   try {
     const goals = await readGoalSnapshots(project, target)
+    for (const goal of options.externalGoals || []) {
+      if (goal?.id && goal?.sessionID && (!target || target === goal.id || target === goal.sessionID)) goals.push(goal)
+    }
     const stateFile = pulseStateFile(project)
     const state = await readJson(stateFile, { schemaVersion: 1, goals: {} })
     if (!state.goals || typeof state.goals !== "object") state.goals = {}

@@ -35,7 +35,7 @@ try {
   const options = { autonomous: false, nested: { retained: true } }
   await writeFile(path.join(config, "opencode.json"), JSON.stringify({ plugin: [
     { package: "@bybrawe/opencode-goal@1.0.0", options },
-    { package: "@bybrawe/opencode-loop@0.1.0", options: { quiet: true } },
+    { package: "@rwanbt/opencode-loop@0.1.0", options: { quiet: true } },
     "other-plugin",
   ] }))
   await writeFile(path.join(config, "commands/goal.md"), "Custom Goal command\n")
@@ -51,7 +51,7 @@ try {
   assert.equal(parsed.plugins.length, 3)
   assert.ok(parsed.plugins.includes("other-plugin"))
   assert.deepEqual(parsed.plugins.find((item) => item.package?.startsWith("@bybrawe/opencode-goal@")).options, options)
-  assert.deepEqual(parsed.plugins.find((item) => item.package?.startsWith("@bybrawe/opencode-loop@")).options, { quiet: true })
+  assert.deepEqual(parsed.plugins.find((item) => item.package?.startsWith("@rwanbt/opencode-loop@")).options, { quiet: true })
   assert.equal(await readFile(path.join(config, "commands/goal.md"), "utf8"), "Custom Goal command\n")
   assert.equal(await readFile(path.join(config, "commands/loop-goal.md"), "utf8"), "Custom Loop Goal command\n")
   run(config, ["--with-goals", "--without-loop-goals"])

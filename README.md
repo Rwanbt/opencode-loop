@@ -1,4 +1,38 @@
 # OpenCode Loop
+> **Rwanbt fork — development branch** (`@rwanbt/opencode-loop`, `0.6.8-rwanbt.2`). This fork includes native `/daemon` controls for OpenCode 2, alongside upstream `/loop`. It is **not yet published to npm**. Commands below referring to `@bybrawe` describe the original upstream, not this fork.
+
+### Fork installation (OpenCode 2 Desktop, no recompilation)
+
+For OpenCode 2.0.29 CLI / 2.0.32 Desktop on Windows, the verified deployment is a **versioned local package adapter**. The host's Git dependency preparation rejected both `github:` and `git+https:` specs; do not assume `opencode plugin add` can install this fork from Git directly. Clone this fork at a reviewed SHA, with npm installed, then run:
+
+```powershell
+.\scripts\install-fork-windows.ps1                  # Preview; no changes
+.\scripts\install-fork-windows.ps1 -Apply           # Install only the fork plugin
+opencode reload
+```
+
+The installer backs up `opencode.jsonc`, requires the pinned upstream Loop 0.6.8 entry, installs `@rwanbt/opencode-loop` into its own local package directory, preserves Goal and unrelated plugins, validates `/loop` and `/daemon` on the running server, and restores the prior config on activation failure. It never recompiles or replaces OpenCode. If you already have the fork registered, it exits without edits. Fork source and installed package remain separate so future upstream changes cannot silently replace it.
+
+> **Not published to npm.** Do not run `npx @rwanbt/opencode-loop` until that package exists in the registry. The historical installer lower in this README and the upstream `@bybrawe` examples are not the fork installation path.
+
+### Embedded daemon controls
+
+```text
+/daemon status
+/daemon start
+/daemon stop
+/daemon restart
+/daemon auto on
+/daemon auto off
+/daemon pulse on
+/daemon pulse off
+```
+
+- The controller is **part of the OpenCode 2 server plugin lifecycle**, not a second Windows service or the standalone `opencode-loopd` process. It stops cleanly when the last plugin instance unloads. Starting with Windows is not required.
+- **Default: stopped, autostart off**. `/daemon start` starts a read-only Goal pulse monitor for the current project; `/daemon stop` stops it and disables autostart. `/daemon auto on` starts now and remembers the preference. `/daemon auto off` only disables the next automatic start; it does not stop a running monitor. `/daemon pulse off` suspends Goal checks without enabling any AI execution.
+- A per-project lock prevents two OpenCode server processes from monitoring the same project simultaneously. Locks with unverifiable owners fail closed. The monitor reads `.opencode/goals/*.json`, logs an alert once per stall episode, and writes only `.opencode/opencode-loop/{daemon-control,pulse-check}.json`. No model calls, permission approvals, automatic Goal resumes or scheduled shell commands are introduced by `/daemon`.
+- Existing `/loop` jobs still use their own session scheduler. The standalone `opencode-loopd` CLI remains available separately if explicitly needed. **The embedded `/daemon` does not control an unrelated standalone `opencode-loopd` process.** The fork includes a read-only adapter for the installed `@prevalentware/opencode-goal-plugin` 0.1.63 global `goals.json` schema: Unix-second dates are normalized, and every cross-workspace Goal session must be attested by OpenCode `session.get` before it is monitored. Unattested sessions are excluded. Live active Goal monitoring still requires a project with an active Goal.
+
 
 ## Native OpenCode 2 (0.6.8)
 
