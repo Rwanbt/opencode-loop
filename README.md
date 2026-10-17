@@ -3,15 +3,17 @@
 
 ### Fork installation (OpenCode 2 Desktop, no recompilation)
 
-Install from a verified GitHub commit or the fork development branch. **Remove the existing upstream Loop registration first** so two implementations never load together. Save the original `opencode.jsonc` before any switch. The existing `@prevalentware/opencode-goal-plugin` configuration must be preserved.
+For OpenCode 2.0.29 CLI / 2.0.32 Desktop on Windows, the verified deployment is a **versioned local package adapter**. The host's Git dependency preparation rejected both `github:` and `git+https:` specs; do not assume `opencode plugin add` can install this fork from Git directly. Clone this fork at a reviewed SHA, with npm installed, then run:
 
 ```powershell
-opencode plugin add "github:Rwanbt/opencode-loop#feat/daemon-control-v2"
+.\scripts\install-fork-windows.ps1                  # Preview; no changes
+.\scripts\install-fork-windows.ps1 -Apply           # Install only the fork plugin
 opencode reload
-opencode plugin list
 ```
 
-> **Do not run `npx @rwanbt/opencode-loop` until the scoped package is actually published.** For reproducibility, replace the branch name with a reviewed commit SHA. The legacy installer only registers npm specs, so it is not the fork's installation path.
+The installer backs up `opencode.jsonc`, requires the pinned upstream Loop 0.6.8 entry, installs `@rwanbt/opencode-loop` into its own local package directory, preserves Goal and unrelated plugins, validates `/loop` and `/daemon` on the running server, and restores the prior config on activation failure. It never recompiles or replaces OpenCode. If you already have the fork registered, it exits without edits. Fork source and installed package remain separate so future upstream changes cannot silently replace it.
+
+> **Not published to npm.** Do not run `npx @rwanbt/opencode-loop` until that package exists in the registry. The historical installer lower in this README and the upstream `@bybrawe` examples are not the fork installation path.
 
 ### Embedded daemon controls
 
