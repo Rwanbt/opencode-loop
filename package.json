@@ -1,7 +1,7 @@
 {
-  "name": "@bybrawe/opencode-loop",
-  "version": "0.6.8",
-  "description": "Idle-safe /loop scheduling and background automation for OpenCode, with optional legacy Loop Goal compatibility and a separately installable OpenCode Goal companion.",
+  "name": "@rwanbt/opencode-loop",
+  "version": "0.6.8-rwanbt.1",
+  "description": "Rwanbt fork: native OpenCode 2 Loop scheduling and embedded /daemon Goal pulse controls.",
   "type": "module",
   "main": "src/plugin.js",
   "exports": {
@@ -53,13 +53,13 @@
   ],
   "author": "ByBrawe",
   "license": "MIT",
-  "homepage": "https://github.com/ByBrawe/opencode-loop#readme",
+  "homepage": "https://github.com/Rwanbt/opencode-loop#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ByBrawe/opencode-loop.git"
+    "url": "git+https://github.com/Rwanbt/opencode-loop.git"
   },
   "bugs": {
-    "url": "https://github.com/ByBrawe/opencode-loop/issues"
+    "url": "https://github.com/Rwanbt/opencode-loop/issues"
   },
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.4.0 <2"

@@ -9,7 +9,7 @@ async function OpenCodeLoopPlugin(...args) {
   return legacy(...args)
 }
 
-export const OPENCODE_LOOP_PLUGIN_ID = "@bybrawe/opencode-loop"
+export const OPENCODE_LOOP_PLUGIN_ID = "@rwanbt/opencode-loop"
 
 export const OpenCodeLoopPluginModule = Object.freeze({
   id: OPENCODE_LOOP_PLUGIN_ID,

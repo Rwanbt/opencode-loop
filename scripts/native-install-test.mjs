@@ -9,7 +9,7 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const installer = path.join(root, "scripts/install-node.mjs")
 const temp = await mkdtemp(path.join(tmpdir(), "native-loop-installer-"))
 const version = JSON.parse(await readFile(path.join(root, "package.json"), "utf8")).version
-const spec = `@bybrawe/opencode-loop@${version}`
+const spec = `@rwanbt/opencode-loop@${version}`
 let cases = 0
 const exists = async (file) => { try { await access(file); return true } catch { return false } }
 function run(config, args = [], expected = 0) {
@@ -52,7 +52,7 @@ try {
   assert.equal(await exists(path.join(brokenLoose, "plugins/opencode-loop")), false, "native update must remove the old loose V2 copy that cannot resolve package dependencies")
   cases++
 
-  const options = { package: "@bybrawe/opencode-loop@0.5.38", options: { quiet: true, nested: { value: "preserved" } }, enabled: true }
+  const options = { package: "@rwanbt/opencode-loop@0.5.38", options: { quiet: true, nested: { value: "preserved" } }, enabled: true }
   const obj = await config("object", { plugins: ["other-plugin", options] })
   run(obj)
   assert.deepEqual((await readConfig(obj)).plugins, ["other-plugin", { ...options, package: spec }])
@@ -62,7 +62,7 @@ try {
   assert.equal(await exists(path.join(obj, "plugins/opencode-loop")), false)
   cases++
 
-  const both = await config("both", { plugin: ["legacy-unrelated", "@bybrawe/opencode-loop@old"], plugins: [options, "native-unrelated"] })
+  const both = await config("both", { plugin: ["legacy-unrelated", "@rwanbt/opencode-loop@old"], plugins: [options, "native-unrelated"] })
   run(both)
   assert.deepEqual(await readConfig(both), { plugins: ["legacy-unrelated", "native-unrelated", { ...options, package: spec }] })
   cases++
@@ -90,7 +90,7 @@ try {
   assert.equal(canonicalUser.model, "")
   cases++
 
-  const jsonc = await config("jsonc", '{\r\n  // keep-before\r\n  "theme": "url://example",\r\n  "plugin": ["@bybrawe/opencode-loop@old"] // keep-after\r\n}\r\n')
+  const jsonc = await config("jsonc", '{\r\n  // keep-before\r\n  "theme": "url://example",\r\n  "plugin": ["@rwanbt/opencode-loop@old"] // keep-after\r\n}\r\n')
   run(jsonc)
   const text = await readFile(path.join(jsonc, "opencode.json"), "utf8")
   assert.match(text, /keep-before/)
@@ -107,7 +107,7 @@ try {
   assert.equal(await readFile(path.join(conflict, "opencode.json"), "utf8"), conflictBefore)
   cases++
 
-  const invalid = await config("invalid", { plugin: ["@bybrawe/opencode-loop@old"] })
+  const invalid = await config("invalid", { plugin: ["@rwanbt/opencode-loop@old"] })
   await writeFile(path.join(invalid, "config.jsonc"), '{ "plugins": "not-an-array" }')
   const invalidBefore = await readFile(path.join(invalid, "opencode.json"), "utf8")
   run(invalid, [], 1)

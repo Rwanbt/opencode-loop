@@ -12,7 +12,7 @@ const nativePluginDir = join(pluginDir, "opencode-loop")
 const commandDir = join(config, "commands")
 const agentDir = join(config, "agents")
 const packagePath = join(config, "package.json")
-const packageName = "@bybrawe/opencode-loop"
+const packageName = "@rwanbt/opencode-loop"
 const packageVersion = JSON.parse(await readFile(join(root, "package.json"), "utf8")).version
 const packageSpec = `${packageName}@${packageVersion}`
 const configCandidates = ["opencode.json", "opencode.jsonc", "config.json", "config.jsonc"]
@@ -22,7 +22,7 @@ const installerArgs = rawInstallerArgs.filter((arg) => arg !== "--legacy-v1")
 const uninstallRequested = installerArgs.length === 1 && ["--uninstall", "uninstall", "--remove"].includes(installerArgs[0] || "")
 
 if (installerArgs.includes("--help") || installerArgs.includes("-h")) {
-  console.log(`OpenCode Loop installer/updater\n\nUsage:\n  opencode-loop\n  npx -y @bybrawe/opencode-loop@latest\n  npx -y @bybrawe/opencode-loop@latest --uninstall\n\nInstall/update defaults to native OpenCode 2: the exact package version is registered in the plural plugins config so OpenCode resolves the package and its V2 runtime dependencies together. No loose local V2 plugin copy, V1 SDK, or legacy command files are needed. Existing npm registrations are pinned to the exact version and migrated to plugins while retaining object options. Use --legacy-v1 to install the compatibility loader and legacy command files explicitly.\nUninstall removes Loop package registrations plus known local plugin/command/agent files while preserving project Loop state.\n\nSet OPENCODE_CONFIG_DIR to target a non-default OpenCode config directory.`)
+  console.log(`OpenCode Loop installer/updater\n\nUsage:\n  opencode-loop\n  npx -y @rwanbt/opencode-loop@latest\n  npx -y @rwanbt/opencode-loop@latest --uninstall\n\nInstall/update defaults to native OpenCode 2: the exact package version is registered in the plural plugins config so OpenCode resolves the package and its V2 runtime dependencies together. No loose local V2 plugin copy, V1 SDK, or legacy command files are needed. Existing npm registrations are pinned to the exact version and migrated to plugins while retaining object options. Use --legacy-v1 to install the compatibility loader and legacy command files explicitly.\nUninstall removes Loop package registrations plus known local plugin/command/agent files while preserving project Loop state.\n\nSet OPENCODE_CONFIG_DIR to target a non-default OpenCode config directory.`)
   process.exit(0)
 }
 

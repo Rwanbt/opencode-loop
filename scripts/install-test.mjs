@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url"
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const installer = path.join(root, "scripts", "install-node.mjs")
 const packageVersion = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8")).version
-const expectedPackageSpec = `@bybrawe/opencode-loop@${packageVersion}`
+const expectedPackageSpec = `@rwanbt/opencode-loop@${packageVersion}`
 const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencode-loop-installer-"))
 const packagedCommandCount = (await fs.readdir(path.join(root, "commands"))).filter((name) => name.endsWith(".md")).length
 
@@ -74,7 +74,7 @@ try {
 
   const configured = path.join(temporaryRoot, "configured")
   await fs.mkdir(path.join(configured, "plugins"), { recursive: true })
-  await fs.writeFile(path.join(configured, "opencode.json"), JSON.stringify({ plugin: ["@bybrawe/opencode-loop@latest"] }), "utf8")
+  await fs.writeFile(path.join(configured, "opencode.json"), JSON.stringify({ plugin: ["@rwanbt/opencode-loop@latest"] }), "utf8")
   await fs.writeFile(path.join(configured, "plugins", "opencode-loop.ts"), "duplicate", "utf8")
   await fs.writeFile(path.join(configured, "plugins", "opencode-loop.js"), "legacy duplicate", "utf8")
   const configuredResult = await runInstaller(configured)
@@ -93,7 +93,7 @@ try {
     // A configured package is authoritative; a local copy would load twice.
     "plugin": [
       "other-plugin",
-      "@bybrawe/opencode-loop",
+      "@rwanbt/opencode-loop",
     ],
   }`, "utf8")
   const jsoncResult = await runInstaller(jsonc)
@@ -105,7 +105,7 @@ try {
 
   const lookalike = path.join(temporaryRoot, "lookalike")
   await fs.mkdir(lookalike, { recursive: true })
-  await fs.writeFile(path.join(lookalike, "opencode.json"), JSON.stringify({ plugin: ["@bybrawe/opencode-loop-extra"] }), "utf8")
+  await fs.writeFile(path.join(lookalike, "opencode.json"), JSON.stringify({ plugin: ["@rwanbt/opencode-loop-extra"] }), "utf8")
   const lookalikeResult = await runInstaller(lookalike)
   assert.equal(lookalikeResult.code, 0, lookalikeResult.stderr)
   assert.equal(await exists(path.join(lookalike, "plugins", "opencode-loop.ts")), true)
@@ -118,7 +118,7 @@ try {
     // Keep unrelated OpenCode configuration.
     "plugin": [
       "other-plugin",
-      "@bybrawe/opencode-loop@0.5.1",
+      "@rwanbt/opencode-loop@0.5.1",
     ],
     "permission": { "read": "allow" },
   }`, "utf8")

@@ -6,9 +6,9 @@ import { fileURLToPath, pathToFileURL } from "node:url"
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const pkg = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"))
-assert.ok(["@bybrawe/opencode-loop", "@bybrawe/opencode-goal"].includes(pkg.name))
+assert.ok(["@rwanbt/opencode-loop", "@bybrawe/opencode-goal"].includes(pkg.name))
 assert.ok(process.argv.length <= 3, "expected at most one consumer directory")
-const loop = pkg.name === "@bybrawe/opencode-loop"
+const loop = pkg.name === "@rwanbt/opencode-loop"
 const cwd = process.argv[2] ? path.resolve(process.argv[2]) : root
 const packageRoot = process.argv[2] ? path.join(cwd, "node_modules", ...pkg.name.split("/")) : root
 const url = (relative) => pathToFileURL(path.join(packageRoot, relative)).href
@@ -43,7 +43,7 @@ function probe(mode) {
     for (const entry of entries) {
       const { default: plugin } = await import(entry);
       assert.equal(typeof plugin.setup, "function", entry);
-      assert.equal(plugin.id, "@bybrawe/opencode-loop", entry);
+      assert.equal(plugin.id, "@rwanbt/opencode-loop", entry);
       if (${JSON.stringify(mode)} === "isolation") {
         assert.equal(globalThis.__legacyModuleLoads, undefined, "native import initialized legacy runtime");
         if (entry.endsWith("/v2")) assert.equal("server" in plugin, false, "native entry must not expose V1 dispatch");

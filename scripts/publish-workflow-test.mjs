@@ -48,7 +48,7 @@ assert.ok(workflow.includes('--prefer-online --cache "$VERIFY_DIR/npm-cache-$att
 assert.ok(workflow.includes("Published Loop+Goal clean-install validation did not converge"), "clean consumer must remain a hard release gate")
 
 const sha = "a".repeat(40)
-const request = { name: "@bybrawe/opencode-loop", version: "0.6.8", predecessor: "0.6.7", goal: { version: "1.3.49", sha: "b".repeat(40) } }
+const request = { name: "@rwanbt/opencode-loop", version: "0.6.8", predecessor: "0.6.7", goal: { version: "1.3.49", sha: "b".repeat(40) } }
 const pkg = { name: request.name, version: request.version }
 const env = { GITHUB_REPOSITORY: "ByBrawe/opencode-loop", GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha }
 assert.strictEqual(validateRelease(request, pkg, env), request)

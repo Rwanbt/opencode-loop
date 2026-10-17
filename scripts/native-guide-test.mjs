@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const temp = await mkdtemp(path.join(tmpdir(), "loop-guide-config-"))
 const file = path.join(temp, "opencode.json")
 const version = JSON.parse(await readFile(path.join(root, "package.json"), "utf8")).version
-const spec = `@bybrawe/opencode-loop@${version}`
+const spec = `@rwanbt/opencode-loop@${version}`
 function run(args = []) {
   return spawnSync(process.execPath, [path.join(root, "scripts/install-node.mjs"), ...args], {
     cwd: root, env: { ...process.env, OPENCODE_CONFIG_DIR: temp }, encoding: "utf8", timeout: 20_000,
@@ -18,7 +18,7 @@ function run(args = []) {
 try {
   const options = { quiet: false, nested: { count: 3 } }
   const other = ["other-plugin", { enabled: false }]
-  await writeFile(file, JSON.stringify({ plugin: [["@bybrawe/opencode-loop@0.1.0", options], other] }))
+  await writeFile(file, JSON.stringify({ plugin: [["@rwanbt/opencode-loop@0.1.0", options], other] }))
   let result = run(["--legacy-v1"])
   assert.equal(result.status, 0, result.stderr)
   assert.deepEqual(JSON.parse(await readFile(file, "utf8")).plugin, [other, [spec, options]])

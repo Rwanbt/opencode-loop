@@ -2,7 +2,7 @@ import { Plugin } from "@opencode/plugin"
 import bundled from "./native.js"
 
 const native = Plugin.define({
-  id: "@bybrawe/opencode-loop",
+  id: "@rwanbt/opencode-loop",
   setup: (context) => bundled.setup(context),
 })
 
