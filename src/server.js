@@ -3697,7 +3697,8 @@ ${lastError ? `Error: ${lastError}
   };
 }
 async function acquireDaemonController(directory, { scopeAllowed } = {}) {
-  const key = path11.resolve(directory).toLowerCase();
+  const resolved = path11.resolve(directory);
+  const key = process.platform === "win32" ? resolved.toLowerCase() : resolved;
   let entry = controllers.get(key);
   if (!entry) {
     const controller = createDaemonController({ directory, scopeAllowed });

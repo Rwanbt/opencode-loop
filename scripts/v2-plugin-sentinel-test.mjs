@@ -22,6 +22,7 @@ assert.equal(OPENCODE_LOOP_V2_RUNTIME_IMPLEMENTED, false)
 assert.deepEqual(OPENCODE_LOOP_V2_HOST_REQUIREMENTS, ["event.subscribe", "session.prompt"])
 assert.deepEqual(OPENCODE_LOOP_V2_RUNTIME_REQUIREMENTS, ["event.subscribe", "session.prompt", "runtime.adapter"])
 assert.deepEqual(Object.keys(OPENCODE_LOOP_V2_COMMANDS), [
+  "daemon",
   "loop",
   "loop-pause",
   "loop-resume",
