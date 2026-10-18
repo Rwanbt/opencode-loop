@@ -33,7 +33,7 @@ test("Windows Desktop native catalog probe checks both commands but never return
     await mkdir(workspace, { recursive: true })
     await mkdir(desktopWorkspace, { recursive: true })
     await writeFile(path.join(cfg, "opencode.json"), JSON.stringify({
-      plugins: ["@rwanbt/opencode-loop@0.6.6", "@bybrawe/opencode-goal@1.3.47"],
+      plugins: ["@rwanbt/opencode-loop@0.6.8-rwanbt.2", "@bybrawe/opencode-goal@1.3.47"],
       secrets: password,
     }))
     await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))
@@ -47,7 +47,7 @@ test("Windows Desktop native catalog probe checks both commands but never return
     assert.equal(result.service.registeredVersion, "2.0.29")
     assert.equal(result.service.versionMismatch, undefined)
     assert.deepEqual(result.service.commands, { loop: true, goal: true, count: 3 })
-    assert.deepEqual(result.config.pins.loop, ["@rwanbt/opencode-loop@0.6.6"])
+    assert.deepEqual(result.config.pins.loop, ["@rwanbt/opencode-loop@0.6.8-rwanbt.2"])
     assert.deepEqual(result.config.pins.goal, ["@bybrawe/opencode-goal@1.3.47"])
     assert.ok(calls.every((c) => c.directory === workspace))
     assert.ok(calls.every((c) => c.auth === "Basic " + Buffer.from("opencode:" + password).toString("base64")))
