@@ -140,7 +140,11 @@ export function createDaemonController({ directory, scopeAllowed, check = async 
 }
 
 export async function acquireDaemonController(directory, { scopeAllowed } = {}) {
-  const key = path.resolve(directory).toLowerCase()
+  // Only Windows file paths are case-insensitive by default. POSIX paths may
+  // identify different projects by case; collapsing those names leaks daemon
+  // state, locks, autostart preferences, and Goal checks between workspaces.
+  const resolved = path.resolve(directory)
+  const key = process.platform === "win32" ? resolved.toLowerCase() : resolved
   let entry = controllers.get(key)
   if (!entry) {
     const controller = createDaemonController({ directory, scopeAllowed })
