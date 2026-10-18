@@ -41,8 +41,12 @@ function safeVersion(value) {
 function presentPins(raw) {
   const result = {}
   for (const name of packageNames) {
-    const prefix = "@bybrawe/opencode-" + name + "@"
-    const hits = raw.match(new RegExp(prefix.replace(/[.*+?^$\\{\\}()|[\\]\\\\]/g, "\\$&") + "[0-9]+\\.[0-9]+\\.[0-9]+", "g")) ?? []
+    // Native Loop fork and upstream are distinct installable package IDs.
+    // A diagnostic that only searches @bybrawe falsely reports our fork absent.
+    const owners = name === "loop" ? ["rwanbt", "bybrawe"] : ["bybrawe"]
+    const hits = owners.flatMap((owner) => raw.match(new RegExp(
+      "@" + owner + "/opencode-" + name + "@[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?", "g",
+    )) ?? [])
     result[name] = [...new Set(hits)].sort()
   }
   return result
